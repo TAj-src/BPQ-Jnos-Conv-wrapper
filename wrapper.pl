@@ -1,22 +1,22 @@
 
-#!/usr/bin/perl -w -T
+#!/usr/bin/perl -T
 use strict;
 
 $ENV{PATH} = '/bin';
-
 
 use IO::Socket;
 use IO::Select;
 use IO::Handle;
 
 my $socket = IO::Socket::INET->new(
-                 PeerAddr    => 'pe1rrr.red-heat.com',
+                 PeerAddr    => 'localhost',
                  PeerPort    =>  3600,
                  Proto       => 'tcp',
-                 Timeout     =>  2
+                 Timeout     =>  1
              )
-             or die "Could not connect";
+             or die "Could not connect\n";
 
+my $convport = 3333;
 
 my $select = IO::Select->new();
 
@@ -27,14 +27,13 @@ my $old_fh = select(STDOUT);
 $| = 1;
 select($old_fh);
 
-
 $select -> add ($socket);
 
 # Read Callsign of connecting station
 my $call = <STDIN>;
 $call =~ s/^\s*//;
 $call =~ s/\s*$//;
-print $socket "/n $call 3333\n";
+print $socket "/n $call $convport\n";
 
 $select -> add (\*STDIN);  # Does not work on Windows! [ http://stackoverflow.com/a/1701458/180275 ]
 
@@ -48,22 +47,22 @@ while (1) {
 
           $socket->recv($buf,1024);
           if (length $buf == 0 )  {
-                die "Bye1\n";
+                die "\n";
 
           }
 
           unless (print "$buf"  ) {
-                die "Bye2\n";
+                die "\n";
           }
 
        }
        else {
 
          my $buf = <STDIN>;
-         print $socket $buf or die "Bye!\n";
+         print $socket $buf or die "\n";
 
        }
     }
   }
-  #print "$!\n";
+  
 }
